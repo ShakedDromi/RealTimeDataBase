@@ -1,5 +1,6 @@
 package com.example.realtimedatabase;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -10,27 +11,35 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+
+import javax.security.auth.Subject;
+
+import static com.example.realtimedatabase.FBref.refSub;
+import static com.example.realtimedatabase.FBref.refUsers;
 
 public class Info extends AppCompatActivity implements AdapterView.OnItemClickListener {
     ListView lvName,lvSubName;
-    TextView tvName,tvAdd,tvStuNum,tvMName,tvMNum,tvFName,tvFNum,tvHNum,tvGrades;
-
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference refSub = database.getReference("Subject");
-    DatabaseReference refUsers = database.getReference("Users");
+    TextView tvName,tvAdd,tvStuNum,tvMName,tvMNum,tvFName,tvFNum,tvHNum,tvGgrade,tvSsub;
+    Spinner spQUAR1;
 
     List<String> subjectList = new ArrayList<String>();
     List<String> studentList = new ArrayList<String>();
+    Users user;
+    Grades sub;
 
     String stName,stMname,stDname,stNum,stMnum,stDnum,stHnum,stAddress;
 
@@ -39,17 +48,37 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
-        tvAdd=(TextView) findViewById(R.id.tv2);
-        tvFName=(TextView) findViewById(R.id.tv6);
-        tvFNum=(TextView) findViewById(R.id.tv7);
-        tvHNum=(TextView) findViewById(R.id.tv8);
-        tvMName=(TextView) findViewById(R.id.tv4);
-        tvMNum=(TextView) findViewById(R.id.tv5);
-        tvName=(TextView) findViewById(R.id.tv);
-        tvStuNum=(TextView) findViewById(R.id.tv3);
-        tvGrades=(TextView) findViewById(R.id.tvGrades);
+        tvAdd=(TextView) findViewById(R.id.tvAdd);
+        tvFName=(TextView) findViewById(R.id.tvFName);
+        tvFNum=(TextView) findViewById(R.id.tvFNum);
+        tvHNum=(TextView) findViewById(R.id.tvHNum);
+        tvMName=(TextView) findViewById(R.id.tvMName);
+        tvMNum=(TextView) findViewById(R.id.tvMNum);
+        tvName=(TextView) findViewById(R.id.tvName);
+        tvStuNum=(TextView) findViewById(R.id.tvStuNum);
         lvName=(ListView) findViewById(R.id.lvName);
         lvSubName=(ListView) findViewById(R.id.lvSubName);
+        tvSsub=(TextView) findViewById(R.id.tvSsub);
+        tvGgrade=(TextView) findViewById(R.id.tvGgrade);
+        spQUAR1=(Spinner) findViewById(R.id.spQUAR1);
+
+        lvName.setOnItemClickListener(this);
+        lvName.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        lvSubName.setOnItemClickListener(this);
+        lvSubName.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+
+        spQUAR1=(Spinner)findViewById(R.id.spQUAR1);
+
+        String[] arraySpinner = new String[] {
+                "Quarter", "1", "2", "3", "4"
+        };
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, arraySpinner);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spQUAR1.setAdapter(adapter);
+
 
         ArrayAdapter<String> adapterSubjects = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, subjectList);
@@ -108,8 +137,85 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
         });
     }
 
+
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+
+        if (parent==lvName){
+            Toast.makeText(this,studentList.get(pos) , Toast.LENGTH_SHORT).show();
+            Query querystu =refUsers.orderByChild("name").equalTo(studentList.get(pos));
+            querystu.addListenerForSingleValueEvent(VELstudent);
+        }
+        else{
+           if (lvSubName.equals(parent)){
+                Query querysub =refUsers.equalTo(subjectList.get(pos));
+                //querysub.addListenerForSingleValueEvent(VELsubject);
+                tvSsub.setText(subjectList.get(pos));
+
+        }
+        }
+    }
+
+
+    ValueEventListener VELstudent =new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists()){
+                for (DataSnapshot data : dataSnapshot.getChildren()){
+                    user = data.getValue(Users.class);
+                    tvAdd.setText(user.getAddress());
+                    tvFName.setText(user.getDname());
+                    tvFNum.setText(user.getDnum());
+                    tvHNum.setText(user.getHnum());
+                    tvMName.setText(user.getMname());
+                    tvMNum.setText(user.getMnum());
+                    tvName.setText(user.getName());
+                    tvStuNum.setText(user.getNum());
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+    };
+
     public void deleteStu(View view) {
-        //refUsers.child().removeValue();
+        refUsers.child(tvName.getText().toString()).removeValue();
+        tvStuNum.setText("");
+        tvAdd.setText("");
+        tvHNum.setText("");
+        tvFName.setText("");
+        tvFNum.setText("");
+        tvMName.setText("");
+        tvMNum.setText("");
+        tvName.setText("");
+    }
+
+
+    /*final ValueEventListener VELsubject = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists()) {
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    subjectList()
+                    sub = data.getValue(Grades.class);
+                    //tvSsub.setText(sub.getSub());
+                    //tvGrade.setText(user.getDname());
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+        }
+    };*/
+
+    public void deleteSub(View view) {
+        refUsers.child(tvSsub.getText().toString()).removeValue();
+        tvSsub.setText("");
+        tvGgrade.setText("");
     }
 
     public boolean onCreateOptionsMenu (Menu menu){
@@ -134,13 +240,4 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
         return true;
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent==lvName.getParent()){
-
-        }
-        else{
-
-        }
-    }
 }

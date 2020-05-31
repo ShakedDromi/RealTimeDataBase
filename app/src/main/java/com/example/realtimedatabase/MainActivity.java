@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,15 +21,15 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.realtimedatabase.FBref.refGrades;
+import static com.example.realtimedatabase.FBref.refSub;
+import static com.example.realtimedatabase.FBref.refUsers;
+
 public class MainActivity extends AppCompatActivity {
     EditText etNAME,etNUM,etMNAME,etDNAME,etHNUM,etMNUM,etDNUM,etADD,etGRADE,etNAME1;
     Spinner spQUAR,spSUB;
     String name,Mname,Dname,num,Mnum,Dnum,Hnum,address,namestu,reva,sub,grade;
 
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference refSub = database.getReference("Subject");
-    DatabaseReference refUsers = database.getReference("Users");
-    DatabaseReference refGrades = database.getReference("Grades");
     // ArrayList<String> stlst=new <String>();
 
     @Override
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         address=etADD.getText().toString();
         Users user=new Users(name,Mname,Dname,num,Mnum,Dnum,Hnum,address);
         refUsers.child(name).setValue(user);
+        Toast.makeText(this,"Student Submited",Toast.LENGTH_LONG).show();
     }
 
     public void sndsub(View view) {
@@ -127,6 +129,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
 
 }
