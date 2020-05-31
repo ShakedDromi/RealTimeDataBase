@@ -28,10 +28,11 @@ import java.util.Queue;
 
 import javax.security.auth.Subject;
 
+import static com.example.realtimedatabase.FBref.refGrades;
 import static com.example.realtimedatabase.FBref.refSub;
 import static com.example.realtimedatabase.FBref.refUsers;
 
-public class Info extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class Info extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     ListView lvName,lvSubName;
     TextView tvName,tvAdd,tvStuNum,tvMName,tvMNum,tvFName,tvFNum,tvHNum,tvGgrade,tvSsub;
     Spinner spQUAR1;
@@ -40,6 +41,7 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
     List<String> studentList = new ArrayList<String>();
     Users user;
     Grades sub;
+    String name="", subject="";
 
     String stName,stMname,stDname,stNum,stMnum,stDnum,stHnum,stAddress;
 
@@ -64,17 +66,6 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
 
 
 
-        //spQUAR1.setOnItemSelectedListener(new ItemChooser());
-        /*spQUAR1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-            public void onItemSelected(AdapterView<?> arg0, View view, int position, long id) {
-                int item = spQUAR1.getSelectedItemPosition();
-                if(spQUAR1.getAutofillValue())
-
-            }
-            public void onNothingSelected(AdapterView<?> arg0) { }
-        });*/
-
         lvName.setOnItemClickListener(this);
         lvName.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -84,20 +75,14 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
 
         spQUAR1=(Spinner)findViewById(R.id.spQUAR1);
 
-        String[] arraySpinner = new String[] {
-                "Quarter", "1", "2", "3", "4"
-        };
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, arraySpinner);
+        String[] arraySpinner = new String[] {"Quarter", "1", "2", "3", "4"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arraySpinner);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spQUAR1.setAdapter(adapter);
-        spQUAR1.setOnItemClickListener(this);
+        spQUAR1.setOnItemSelectedListener(this);
 
 
-
-
-        ArrayAdapter<String> adapterSubjects = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, subjectList);
+        ArrayAdapter<String> adapterSubjects = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, subjectList);
         adapterSubjects.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         lvSubName.setAdapter(adapterSubjects);
         // Read from the database
@@ -124,8 +109,7 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
             }
         });
 
-        ArrayAdapter<String> adapterStudents = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, subjectList);
+        ArrayAdapter<String> adapterStudents = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, studentList);
         adapterStudents.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         lvName.setAdapter(adapterStudents);
         // Read from the database
@@ -163,10 +147,8 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
         }
         else{
            if (lvSubName.equals(parent)){
-                Query querysub =refUsers.equalTo(subjectList.get(pos));
-                //querysub.addListenerForSingleValueEvent(VELsubject);
                 tvSsub.setText(subjectList.get(pos));
-
+                subject=subjectList.get(pos);
         }
         }
     }
@@ -185,6 +167,7 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
                     tvMName.setText(user.getMname());
                     tvMNum.setText(user.getMnum());
                     tvName.setText(user.getName());
+                    name=user.getName();
                     tvStuNum.setText(user.getNum());
                 }
             }
@@ -196,41 +179,44 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
     };
 
     public void deleteStu(View view) {
-        refUsers.child(tvName.getText().toString()).removeValue();
-        tvStuNum.setText("");
-        tvAdd.setText("");
-        tvHNum.setText("");
-        tvFName.setText("");
-        tvFNum.setText("");
-        tvMName.setText("");
-        tvMNum.setText("");
-        tvName.setText("");
+        if (name!="") {
+            refUsers.child(name).removeValue();
+            refGrades.child(name).removeValue();
+            tvStuNum.setText("");
+            tvAdd.setText("");
+            tvHNum.setText("");
+            tvFName.setText("");
+            tvFNum.setText("");
+            tvMName.setText("");
+            tvMNum.setText("");
+            tvName.setText("");
+        }
+        else
+            Toast.makeText(this, "please, choose a student first", Toast.LENGTH_SHORT).show();
     }
 
 
-    /*final ValueEventListener VELsubject = new ValueEventListener() {
+    final ValueEventListener VELsubject = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.exists()) {
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    subjectList()
-                    sub = data.getValue(Grades.class);
+             //   for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    sub = dataSnapshot.getValue(Grades.class);
                     //tvSsub.setText(sub.getSub());
-                    //tvGrade.setText(user.getDname());
-                }
+                    tvGgrade.setText(sub.getGrade());
+             //   }
+            }
+            else {
+                tvGgrade.setText("");
+                Toast.makeText(Info.this, "grade does not exist", Toast.LENGTH_SHORT).show();
             }
         }
 
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
         }
-    };*/
+    };
 
-    public void deleteSub(View view) {
-        refUsers.child(tvSsub.getText().toString()).removeValue();
-        tvSsub.setText("");
-        tvGgrade.setText("");
-    }
 
     public boolean onCreateOptionsMenu (Menu menu){
         getMenuInflater().inflate(R.menu.main,menu);
@@ -254,4 +240,33 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
         return true;
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        if (!name.equals("")) {
+            if (!subject.equals("")) {
+                if (pos != 0) {
+                    Query querysub = refGrades.child(name).child(Integer.toString(pos)).child(subject);
+                    querysub.addListenerForSingleValueEvent(VELsubject);
+                } else {
+                    tvGgrade.setText("");
+                    Toast.makeText(this, "please, choose a quarter first", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else{
+                tvGgrade.setText("");
+                Toast.makeText(this, "please, choose a subject first", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else {
+            tvGgrade.setText("");
+            tvSsub.setText("");
+            Toast.makeText(this, "please, choose a student first", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }
