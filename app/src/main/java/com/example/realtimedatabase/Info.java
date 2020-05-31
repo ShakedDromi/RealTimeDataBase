@@ -62,6 +62,19 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
         tvGgrade=(TextView) findViewById(R.id.tvGgrade);
         spQUAR1=(Spinner) findViewById(R.id.spQUAR1);
 
+
+
+        //spQUAR1.setOnItemSelectedListener(new ItemChooser());
+        /*spQUAR1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            public void onItemSelected(AdapterView<?> arg0, View view, int position, long id) {
+                int item = spQUAR1.getSelectedItemPosition();
+                if(spQUAR1.getAutofillValue())
+
+            }
+            public void onNothingSelected(AdapterView<?> arg0) { }
+        });*/
+
         lvName.setOnItemClickListener(this);
         lvName.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -78,6 +91,9 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
                 android.R.layout.simple_spinner_item, arraySpinner);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spQUAR1.setAdapter(adapter);
+        spQUAR1.setOnItemClickListener(this);
+
+
 
 
         ArrayAdapter<String> adapterSubjects = new ArrayAdapter<String>(this,
@@ -136,8 +152,6 @@ public class Info extends AppCompatActivity implements AdapterView.OnItemClickLi
             }
         });
     }
-
-
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
